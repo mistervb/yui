@@ -1,0 +1,26 @@
+src/main/java/com/suaempresa/bot/
+│
+├── BotApplication.java                  # Classe principal da aplicação
+├── config/
+│   └── ThreadPoolConfig.java            # Configuração de thread pools
+│
+├── controller/
+│   └── BotController.java               # Controlador REST
+│
+├── exception/
+│   └── GlobalExceptionHandler.java      # Manipulador global de exceções
+│
+├── model/
+│   └── BotInstance.java                 # Classe de modelo para instâncias do bot
+│
+├── repository/
+│   └── BotInstanceRepository.java       # Interface de repositório para o banco
+│
+├── scheduler/
+│   └── OpportunityScannerScheduler.java # Classe para agendar tarefas automáticas
+│
+├── service/
+│   └── BotInstanceService.java          # Serviço principal de instâncias do bot
+│
+└── utils/
+    └── ImagePriceCalculator.java        # Utilitário para calcular preços
