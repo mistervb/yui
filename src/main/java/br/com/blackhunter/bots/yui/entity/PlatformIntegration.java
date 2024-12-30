@@ -23,7 +23,9 @@ public class PlatformIntegration {
 
     @Enumerated(EnumType.STRING)
     private Plataform plataform;
+    @Lob
     private String apiKey;
+    @Lob
     private String apiSecret;
     private LocalDateTime createdAt;
 }

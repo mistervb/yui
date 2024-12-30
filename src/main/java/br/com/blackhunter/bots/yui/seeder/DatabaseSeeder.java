@@ -65,7 +65,7 @@ public class DatabaseSeeder {
 
     private List<SuperInstance> makeThreeSuperInstance(User mockUser) {
         List<SuperInstance> instances = new ArrayList<>();
-        for(int i = 0; i < 3; i ++) {
+        for(int i = 0; i < 1; i ++) {
             SuperInstance instance = new SuperInstance();
             InetAddress netLocalHost = null;
             String localHost = "";

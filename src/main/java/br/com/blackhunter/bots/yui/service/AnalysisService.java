@@ -1,5 +1,6 @@
 package br.com.blackhunter.bots.yui.service;
 
+import br.com.blackhunter.bots.yui.dto.TrendingImageDTO;
 import br.com.blackhunter.bots.yui.entity.PlatformIntegration;
 import br.com.blackhunter.bots.yui.entity.SuperInstance;
 import br.com.blackhunter.bots.yui.log.YuiLogger;
@@ -37,8 +38,8 @@ public class AnalysisService {
             for(PlatformIntegration plataform : this.plataforms) {
                 switch (plataform.getPlataform()) {
                     case Shutterstock: {
-                        List<String> trendingShutterstockTags = shutterstockService.getTrendingTags(plataform);
-                        generateOpportunities(trendingShutterstockTags);
+                        List<TrendingImageDTO> trendingShutterstockTags = shutterstockService.getTrendingTags(plataform);
+                        generateOpportunities(trendingShutterstockTags, plataform);
                         break;
                     }
                     case Etsy:
@@ -55,17 +56,32 @@ public class AnalysisService {
         }
     }
 
-    private void generateOpportunities(List<String> trendingTags) {
+    private void generateOpportunities(List<TrendingImageDTO> trendings, PlatformIntegration plataform) {
         // Gerar novas imagens baseadas nas tags
-        for (String tag : trendingTags) {
+        System.out.println("Oportunidade encontrada para a plataforma: " + plataform.getPlataform());
+        /*for (TrendingImageDTO trending : trendings) {
             // Chamar função de criação de imagem com IA
-            createImageWithTag(tag);
-        }
+            createImageWithTag(trending);
+        }*/
+        System.out.println("Total de trendings: " + trendings.size());
+        trendings.stream().limit(2).forEach(this::createImageWithTag);
     }
 
-    private void createImageWithTag(String tag) {
+    private void createImageWithTag(TrendingImageDTO trending) {
         // Código para gerar imagem com IA com a tag específica
-        System.out.println("Criando imagem com a tag: " + tag);
+        System.out.println("Tag: " + trending.getTags());
+        System.out.println("Descrição: " + trending.getDescription());
+        System.out.println("Categoria: " + trending.getCategory());
+        System.out.println("Tipo de imagem: " + trending.getImageType());
+        System.out.println("Tipo de mídia: " + trending.getMediaType());
+        System.out.println("Resolução: " + trending.getResolution());
+        System.out.println("Paletas de cores: " + trending.getColorPalette());
+        System.out.println("Contexto de uso: " + trending.getIntendedUse());
+        System.out.println("Nível de detalhamento: " + trending.getDetailLevel());
+        System.out.println("Estilo artístico: " + trending.getStyle());
+        System.out.println("Popularidade/Prioridade: " + trending.getPriority());
+        System.out.println("Fonte de dados: " + trending.getSource());
+        System.out.println("\n");
     }
 
     private void errorLog(Exception e) {
