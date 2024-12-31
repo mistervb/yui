@@ -1,14 +1,17 @@
 package br.com.blackhunter.bots.yui.service;
 
+import br.com.blackhunter.bots.yui.constants.ImageAIModel;
 import br.com.blackhunter.bots.yui.dto.TrendingImageDTO;
 import br.com.blackhunter.bots.yui.entity.PlatformIntegration;
 import br.com.blackhunter.bots.yui.entity.SuperInstance;
 import br.com.blackhunter.bots.yui.log.YuiLogger;
+import br.com.blackhunter.bots.yui.util.PromptGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @Slf4j
@@ -17,6 +20,8 @@ public class AnalysisService {
     private ShutterstockService shutterstockService;
     @Autowired
     private PlatformIntegrationService platformIntegrationService;
+    @Autowired
+    private CloudFlareImageAIService cloudFlareImageAIService;
 
     List<PlatformIntegration> plataforms;
 
@@ -34,10 +39,12 @@ public class AnalysisService {
         }
 
         if(!this.plataforms.isEmpty()) {
+            YuiLogger.info("[AnalysisService] - Iniciando o trend scrapping das plataformas.");
             // Aqui ele deve puxar as trends apenas das plataformas associadas ao usuário:
             for(PlatformIntegration plataform : this.plataforms) {
                 switch (plataform.getPlataform()) {
                     case Shutterstock: {
+                        YuiLogger.info("[AnalysisService] - Buscando tendências da Shutterstock...");
                         List<TrendingImageDTO> trendingShutterstockTags = shutterstockService.getTrendingTags(plataform);
                         generateOpportunities(trendingShutterstockTags, plataform);
                         break;
@@ -58,30 +65,16 @@ public class AnalysisService {
 
     private void generateOpportunities(List<TrendingImageDTO> trendings, PlatformIntegration plataform) {
         // Gerar novas imagens baseadas nas tags
-        System.out.println("Oportunidade encontrada para a plataforma: " + plataform.getPlataform());
-        /*for (TrendingImageDTO trending : trendings) {
-            // Chamar função de criação de imagem com IA
-            createImageWithTag(trending);
-        }*/
-        System.out.println("Total de trendings: " + trendings.size());
-        trendings.stream().limit(2).forEach(this::createImageWithTag);
+        YuiLogger.info("[] - @"+ plataform.getUserId().getName() + "/" + plataform.getPlataform() + ": Iniciando thread de oportunidade para uma lista com " + trendings.size() + " trendings.");
+        AtomicInteger index = new AtomicInteger(0);
+        trendings.stream().limit(10).forEach(trending -> createImageWithTag(index.getAndIncrement(), trending));
+        YuiLogger.info("[] - @" + plataform.getUserId().getName() + "/" + plataform.getPlataform() + ": Thread de oportunidade finalizada!");
     }
 
-    private void createImageWithTag(TrendingImageDTO trending) {
+    private void createImageWithTag(int index, TrendingImageDTO trending) {
         // Código para gerar imagem com IA com a tag específica
-        System.out.println("Tag: " + trending.getTags());
-        System.out.println("Descrição: " + trending.getDescription());
-        System.out.println("Categoria: " + trending.getCategory());
-        System.out.println("Tipo de imagem: " + trending.getImageType());
-        System.out.println("Tipo de mídia: " + trending.getMediaType());
-        System.out.println("Resolução: " + trending.getResolution());
-        System.out.println("Paletas de cores: " + trending.getColorPalette());
-        System.out.println("Contexto de uso: " + trending.getIntendedUse());
-        System.out.println("Nível de detalhamento: " + trending.getDetailLevel());
-        System.out.println("Estilo artístico: " + trending.getStyle());
-        System.out.println("Popularidade/Prioridade: " + trending.getPriority());
-        System.out.println("Fonte de dados: " + trending.getSource());
-        System.out.println("\n");
+        String prompt = PromptGenerator.generatePrompt(trending);
+        cloudFlareImageAIService.generate(ImageAIModel.FLUX_1_SCHNELL, index, prompt);
     }
 
     private void errorLog(Exception e) {

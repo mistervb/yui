@@ -30,7 +30,7 @@ public class ShutterstockService implements PlataformService {
         );
 
         try {
-            // Obtenção das categorias
+            // Obtenção de todas as categorias
             ResponseEntity<CategoryResponse> categoryResponse = httpClientUtil.get(
                     "https://api.shutterstock.com/v2/images/categories?language=es", headers, CategoryResponse.class
             );
@@ -40,15 +40,23 @@ public class ShutterstockService implements PlataformService {
                 return List.of();
             }
 
-            List<String> categories = categoryResponse.getBody().getData().stream()
+            List<String> allCategories = categoryResponse.getBody().getData().stream()
                     .map(Category::getName)
+                    .collect(Collectors.toList());
+
+            // Seleção aleatória de categorias
+            Collections.shuffle(allCategories);
+            List<String> categories = allCategories.stream()
+                    .limit(10) // Pegando até 10 categorias diferentes
                     .collect(Collectors.toList());
 
             List<TrendingImageDTO> trendingImages = new ArrayList<>();
 
-            // Iterando sobre as categorias e buscando imagens para cada uma
+            // Iterando sobre categorias para buscar imagens
             for (String category : categories) {
-                String searchUrl = url + "?category=" + category + "&sort=popular&per_page=10";
+                int page = new Random().nextInt(5) + 1; // Página aleatória para cada categoria
+                String searchUrl = String.format("%s?category=%s&sort=random&page=%d&per_page=5", url, category, page);
+
                 ResponseEntity<ShutterstockResponse> response = httpClientUtil.get(searchUrl, headers, ShutterstockResponse.class);
 
                 if (response.getBody() == null || response.getBody().getData() == null) {
@@ -56,11 +64,11 @@ public class ShutterstockService implements PlataformService {
                     continue;
                 }
 
-                // Processamento para criar TrendingImageDTO
                 List<TrendingImageDTO> categoryImages = response.getBody().getData().stream()
                         .filter(image -> image.getDescription() != null) // Filtra imagens sem descrição
-                        .filter(distinctByKey(ImageData::getDescription)) // Remove duplicatas com base na descrição
+                        .filter(distinctByKey(imageData -> imageData.getAssets().getPreview().getUrl())) // Remove duplicatas pelo URL da imagem
                         .map(image -> {
+                            // Construção do DTO com dados mais variados
                             String description = image.getDescription();
                             String previewUrl = image.getAssets().getPreview().getUrl();
                             String imageType = image.getImageType();
@@ -80,7 +88,6 @@ public class ShutterstockService implements PlataformService {
                                     .map(String::toLowerCase)
                                     .filter(tag -> !tag.isBlank() && tag.length() > 3)
                                     .filter(ShutterstockService::isRelevant)
-                                    .filter(tag -> hasValidLength(tag, 4))
                                     .distinct()
                                     .collect(Collectors.toList());
 
@@ -109,7 +116,10 @@ public class ShutterstockService implements PlataformService {
                 trendingImages.addAll(categoryImages);
             }
 
-            return trendingImages;
+            return trendingImages.stream()
+                    .distinct()
+                    .limit(10) // Garante 10 imagens finais
+                    .collect(Collectors.toList());
 
         } catch (Exception e) {
             String msg = "[ShutterstockService] - ERROR: Erro ao obter tendências do Shutterstock: " + e.getMessage();
