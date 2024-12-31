@@ -1,5 +1,6 @@
 package br.com.blackhunter.bots.yui.service;
 
+import br.com.blackhunter.bots.yui.dto.ImageProduct;
 import br.com.blackhunter.bots.yui.dto.TrendingImageDTO;
 import br.com.blackhunter.bots.yui.entity.PlatformIntegration;
 import br.com.blackhunter.bots.yui.log.YuiLogger;
@@ -47,7 +48,7 @@ public class ShutterstockService implements PlataformService {
             // Seleção aleatória de categorias
             Collections.shuffle(allCategories);
             List<String> categories = allCategories.stream()
-                    .limit(10) // Pegando até 10 categorias diferentes
+                    .limit(7) // Pegando até 10 categorias diferentes
                     .collect(Collectors.toList());
 
             List<TrendingImageDTO> trendingImages = new ArrayList<>();
@@ -118,7 +119,6 @@ public class ShutterstockService implements PlataformService {
 
             return trendingImages.stream()
                     .distinct()
-                    .limit(10) // Garante 10 imagens finais
                     .collect(Collectors.toList());
 
         } catch (Exception e) {
@@ -127,6 +127,32 @@ public class ShutterstockService implements PlataformService {
             YuiLogger.error(msg);
             return List.of();
         }
+    }
+
+    @Override
+    public void startSalesThreads(List<ImageProduct> imageProducts) {
+        /**
+         * Aqui se concentra a lógica e estratégia de vendas de imagens.
+         *
+         * 1. Vendas de Licenças - Serão vendidas 10 licenças de imagens, sendo 5 licenças padrões e
+         *    outras 5 licenças estendidas.
+         *
+         * 2. Ganho por Popularidade e Volume de Downloads - Será feito o upload de 5 imagens na shutterstock
+         *    destinadas a gerarem receita com popularidade e downloads feitos.
+         *
+         * 3. Venda de Pacotes Temáticos: Será vendido um conjunto de imagens com o mesmo tema e estilo.
+         *
+         * 4. Venda de Diretos para Campanhas: Será vendido os direitos de 5 imagens para campanhas de marcas
+         *    e empresas.
+         * */
+
+        int totalQuantity = imageProducts.size();
+        int quantityForLicenseSales = (int) ((28.57D / 100) * totalQuantity);
+        int quantityForGainInPopularityAndDownloadVolume = (int) ((14.29D / 100) * totalQuantity);
+        int quantityForSaleOfThemePackages = quantityForGainInPopularityAndDownloadVolume * 3;
+        int quantityForDirectSalesForCampaigns = quantityForGainInPopularityAndDownloadVolume;
+
+
     }
 
     /**

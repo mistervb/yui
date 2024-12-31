@@ -35,15 +35,14 @@ public class CloudFlareImageAIService {
     @Autowired
     private HttpClientUtil httpClientUtil;
 
-    public void generate(ImageAIModel model, int index, String prompt) {
+    public byte[] generate(ImageAIModel model, int index, String prompt) {
         if (token == null || token.isEmpty() || accountId == null || accountId.isEmpty()) {
             throw new IllegalStateException("Token ou Account ID não configurados.");
         }
 
         switch (model) {
             case FLUX_1_SCHNELL: {
-                generateFlux1Schnell(model, index, prompt);
-                break;
+                return generateFlux1Schnell(model, index, prompt);
             }
             default: {
                 String msg = "[CloudFlareImageAIService] - ERROR: Modelo de IA não suportada nesta versão: " + model.getModelName();
@@ -53,7 +52,7 @@ public class CloudFlareImageAIService {
         }
     }
 
-    private void generateFlux1Schnell(ImageAIModel model, int index, String prompt) {
+    private byte[] generateFlux1Schnell(ImageAIModel model, int index, String prompt) {
         String url = String.format(
                 "https://api.cloudflare.com/client/v4/accounts/%s/%s",
                 accountId, model.getEndpoint()
@@ -86,15 +85,16 @@ public class CloudFlareImageAIService {
                 throw new RuntimeException("Corpo da resposta está vazio.");
             }
 
-            salvarImagem(index, response.getBody());
+            return salvarImagem(index, response.getBody());
         } catch (Exception e) {
             String msg = "[CloudFlareImageAIService] - ERROR: " + e.getMessage();
             log.error(msg);
             YuiLogger.error(msg);
+            return null;
         }
     }
 
-    private void salvarImagem(int index, String jsonResponse) {
+    private byte[] salvarImagem(int index, String jsonResponse) {
         try {
             // Parse do JSON para extrair a string Base64
             ObjectMapper objectMapper = new ObjectMapper();
@@ -123,8 +123,11 @@ public class CloudFlareImageAIService {
             ImageIO.write(imagem, "png", arquivoImagem);
 
             log.info("Imagem salva com sucesso em: {}", arquivoImagem.getAbsolutePath());
+            
+            return imagemBytes;
         } catch (Exception e) {
             log.error("Erro ao carregar ou salvar a imagem", e);
+            throw new RuntimeException("Falha ao processar a imagem: " + e.getMessage(), e);
         }
     }
 
