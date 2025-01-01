@@ -32,10 +32,13 @@ public class PromptGenerator {
             prompt.append("Media type: ").append(trendingImage.getMediaType()).append(". ");
         }
 
-        // Add resolution
-        if (trendingImage.getResolution() != null && !trendingImage.getResolution().isEmpty()) {
-            prompt.append("Resolution: ").append(trendingImage.getResolution()).append(". ");
-        }
+//        // Add resolution
+//        if (trendingImage.getResolution() != null && !trendingImage.getResolution().isEmpty()) {
+//            prompt.append("Resolution: ").append(trendingImage.getResolution()).append(". ");
+//        }
+
+        // Add resolution (enforce minimum 4 megapixels)
+        prompt.append("Resolution: at least 2400x1600 pixels. ");
 
         // Add color palette
         if (trendingImage.getColorPalette() != null && !trendingImage.getColorPalette().isEmpty()) {

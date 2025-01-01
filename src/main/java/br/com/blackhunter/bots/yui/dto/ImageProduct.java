@@ -15,4 +15,5 @@ public class ImageProduct {
     double price;
     Plataform plataform;
     User user;
+    TrendingImageDTO trending;
 }

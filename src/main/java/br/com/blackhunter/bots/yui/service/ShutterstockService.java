@@ -146,12 +146,64 @@ public class ShutterstockService implements PlataformService {
          *    e empresas.
          * */
 
+        // total - 35
         int totalQuantity = imageProducts.size();
-        int quantityForLicenseSales = (int) ((28.57D / 100) * totalQuantity);
-        int quantityForGainInPopularityAndDownloadVolume = (int) ((14.29D / 100) * totalQuantity);
-        int quantityForSaleOfThemePackages = quantityForGainInPopularityAndDownloadVolume * 3;
-        int quantityForDirectSalesForCampaigns = quantityForGainInPopularityAndDownloadVolume;
+        int quantityForLicenseSales = (int) ((28.57D / 100) * totalQuantity); // 10
+        int quantityForGainInPopularityAndDownloadVolume = (int) ((14.29D / 100) * totalQuantity); // 5
+        int quantityForSaleOfThemePackages = quantityForGainInPopularityAndDownloadVolume;
+        int quantityForDirectSalesForCampaigns = quantityForGainInPopularityAndDownloadVolume; // 5
 
+        // Vendas de Licenças
+        List<ImageProduct> imageProductsForLicenseSales = imageProducts.stream()
+                .filter(img -> img.getTrending().getResolution().compareTo("3000x2000") >= 0)
+                .sorted(Comparator.comparingInt(img -> -img.getTrending().getPriority()))
+                .limit(quantityForLicenseSales)
+                .peek(img -> img.setPrice(img.getTrending().getPriority() >= 8 ? 20.0 : 7.5)) // Licenças premium/padrão
+                .collect(Collectors.toList());
+
+        // Ganho por Popularidade e Volume de Downloads
+        List<ImageProduct> imageProductsForGainInPopularityAndDownloadVolume = imageProducts.stream()
+                .filter(img -> img.getTrending().getCategory().matches("nature|abstract|business"))
+                .filter(img -> img.getTrending().getSource().contains("trending"))
+                .sorted(Comparator.comparingInt(img -> -img.getTrending().getPriority()))
+                .limit(quantityForGainInPopularityAndDownloadVolume)
+                .peek(img -> img.setPrice(5.0)) // Preço fixo inicial
+                .collect(Collectors.toList());
+
+        // Venda de Pacotes Temáticos
+        List<List<ImageProduct>> imageProductsPackageForSaleOfThemePackages = imageProducts.stream()
+                .collect(Collectors.groupingBy(img -> img.getTrending().getCategory()))
+                .values().stream()
+                .filter(group -> group.size() >= 5) // Garantir ao menos 5 imagens por tema
+                .limit(quantityForSaleOfThemePackages) // Limitar a 3 pacotes
+                .peek(group -> group.forEach(img -> img.setPrice(15.0))) // Cada imagem no pacote com preço base
+                .collect(Collectors.toList());
+
+        // Venda de Direitos para Campanhas
+        List<ImageProduct> imageProductsForDirectSalesForCampaigns = imageProducts.stream()
+                .filter(img -> img.getTrending().getResolution().compareTo("4000x3000") >= 0)
+                .filter(img -> !img.getTrending().getStyle().isEmpty())
+                .sorted(Comparator.comparingInt(img -> -img.getTrending().getPriority()))
+                .limit(quantityForDirectSalesForCampaigns)
+                .peek(img -> img.setPrice(200.0 + img.getTrending().getPriority() * 10)) // Preço premium baseado na prioridade
+                .collect(Collectors.toList());
+
+
+    }
+
+    private void sellsLicenses(List<ImageProduct> imagesToSell) {
+
+    }
+
+    private void sellsGainInPopularityAndDownloadVolume(List<ImageProduct> imagesToSell) {
+
+    }
+
+    private void sellsThemePackages(List<ImageProduct> imagesToSell) {
+
+    }
+
+    private void sellsDirectForCampaigns(List<ImageProduct> imagesToSell) {
 
     }
 

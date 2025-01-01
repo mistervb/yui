@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @Slf4j
-public class AnalysisService {
+public class TrendScrapingService {
     @Autowired
     private ShutterstockService shutterstockService;
     @Autowired
@@ -27,7 +27,7 @@ public class AnalysisService {
 
     List<PlatformIntegration> plataforms;
 
-    public void startAnalysis(SuperInstance instance) {
+    public void startScraping(SuperInstance instance) {
         this.plataforms = List.of();
         try {
             if(instance.getUserId() == null) {
@@ -68,14 +68,14 @@ public class AnalysisService {
     private void generateOpportunities(List<TrendingImageDTO> trendings, PlatformIntegration plataform, PlataformService plataformService) {
         // Gerar novas imagens baseadas nas tags
         YuiLogger.info("[AnalysisService] - @"+ plataform.getUserId().getName() + "/" + plataform.getPlataform() + ": Iniciando thread de oportunidade para uma lista com " + trendings.size() + " trendings.");
+        System.out.println("Quantidade de trendings: " + trendings.size());
 
         AtomicInteger index = new AtomicInteger(0);
-        /*List<ImageProduct> imageProducts = trendings.stream()
+        List<ImageProduct> imageProducts = trendings.stream()
+                .limit(10)
                 .map(trending -> createImageProduct(index.getAndIncrement(), trending, plataform.getUserId())).toList();
-        plataformService.startSalesThreads(imageProducts);
-        */
+        //plataformService.startSalesThreads(imageProducts);
 
-        System.out.println("Quantidade de trendings: " + trendings.size());
         YuiLogger.info("[AnalysisService] - @" + plataform.getUserId().getName() + "/" + plataform.getPlataform() + ": Thread de oportunidade finalizada!");
     }
 
@@ -89,6 +89,7 @@ public class AnalysisService {
         imageProduct.setDescription(trending.getDescription());
         imageProduct.setUser(user);
         imageProduct.setPrice(0.0d);
+        imageProduct.setTrending(trending);
         return imageProduct;
     }
 

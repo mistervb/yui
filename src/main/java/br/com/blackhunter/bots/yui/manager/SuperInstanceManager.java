@@ -2,14 +2,14 @@ package br.com.blackhunter.bots.yui.manager;
 
 import br.com.blackhunter.bots.yui.entity.SuperInstance;
 import br.com.blackhunter.bots.yui.log.YuiLogger;
-import br.com.blackhunter.bots.yui.service.AnalysisService;
+import br.com.blackhunter.bots.yui.service.TrendScrapingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SuperInstanceManager {
     @Autowired
-    private AnalysisService analysisService;
+    private TrendScrapingService trendScrapingService;
 
     public void startSuperInstance(SuperInstance instance) {
         YuiLogger.info("[Super Instance Manager] - Iniciando Super Instância: " + instance.getName());
@@ -18,7 +18,7 @@ public class SuperInstanceManager {
             // Código da lógica de análise e threads de oportunidades
 
             // Thread de análise:
-            analysisService.startAnalysis(instance);
+            trendScrapingService.startScraping(instance);
         });
         analysisThread.start();
         // Opcional: Salvar a referência da thread no banco, se necessário.
